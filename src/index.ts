@@ -10,5 +10,5 @@ for (let i = 1; i <= blockNumber; i++) {
   chain = blockchain.pushBlock(mineInfo.minedBlock)
 }
 
-console.log('--- GENERATED CHAIN ---\n')
+console.log('--- GERANDO A BLOCKCHAIN ---\n')
 console.log(chain)
