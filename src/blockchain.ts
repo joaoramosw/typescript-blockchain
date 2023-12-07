@@ -25,7 +25,7 @@ export class BlockChain {
     const payload = {
       sequence: 0,
       timestamp: +new Date(),
-      data: 'Genesis Block',
+      data: 'Bloco genesis',
       previousHash: ''
     }
     return {
@@ -57,7 +57,7 @@ export class BlockChain {
       previousHash: this.getPreviousBlockHash()
     }
 
-    console.log(`Created block ${newBlock.sequence}: ${JSON.stringify(newBlock, null, 2)}`)
+    console.log(`Bloco criado ${newBlock.sequence}: ${JSON.stringify(newBlock, null, 2)}`)
     return newBlock
   }
 
@@ -78,7 +78,7 @@ export class BlockChain {
         const shortHash = blockHash.slice(0, 12)
         const mineTime = (endTime - startTime) / 1000
 
-        console.log(`Mined block ${block.sequence} in ${mineTime} seconds. Hash: ${shortHash} (${nonce} attempts)`)
+        console.log(`Bloco Minerado ${block.sequence} em ${mineTime} segundos. Hash: ${shortHash} (${nonce} Tentativas)`)
 
         return {
           minedBlock: { payload: { ...block }, header: { nonce, blockHash } },
@@ -93,7 +93,7 @@ export class BlockChain {
 
   verifyBlock (block: Block) {
     if (block.payload.previousHash !== this.getPreviousBlockHash()) {
-      console.error(`Invalid block #${block.payload.sequence}: Previous block hash is "${this.getPreviousBlockHash().slice(0, 12)}" not "${block.payload.previousHash.slice(0, 12)}"`)
+      console.error(`Bloco inválido #${block.payload.sequence}:O Hash do Bloco Anterior é "${this.getPreviousBlockHash().slice(0, 12)}" não "${block.payload.previousHash.slice(0, 12)}"`)
       return
     }
 
@@ -102,7 +102,7 @@ export class BlockChain {
       difficulty: this.difficulty,
       prefix: this.powPrefix
     })) {
-      console.error(`Invalid block #${block.payload.sequence}: Hash is not proofed, nonce ${block.header.nonce} is not valid`)
+      console.error(`Bloco inválido #${block.payload.sequence}: Hash não é a prova, nonce ${block.header.nonce} não é válido`)
       return
     }
 
@@ -111,7 +111,7 @@ export class BlockChain {
 
   pushBlock (block: Block) {
     if (this.verifyBlock(block)) this.#chain.push(block)
-    console.log(`Pushed block #${JSON.stringify(block, null, 2)}`)
+    console.log(`Bloco empurrado #${JSON.stringify(block, null, 2)}`)
     return this.#chain
   }
 }
