@@ -2,7 +2,8 @@ import { hash, isHashProofed } from './helpers'
 
 export interface Block {
   header: {
-    nonce: number
+    nonce: number //num aleatório que identifica um bloco sendo usado em combinação 
+    //com hash para evitar que as info dos blocos sejam manipuladas.
     blockHash: string
   }
   payload: {
@@ -21,7 +22,7 @@ export class BlockChain {
     this.#chain.push(this.createGenesisBlock())
   }
 
-  private createGenesisBlock () {
+  private createGenesisBlock () { 
     const payload = {
       sequence: 0,
       timestamp: +new Date(),
