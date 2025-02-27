@@ -1,118 +1,118 @@
 import { hash, isHashProofed } from './helpers'
 
-export interface Block {
-  header: {
-    nonce: number //num aleatório que identifica um bloco sendo usado em combinação 
-    //com hash para evitar que as info dos blocos sejam manipuladas.
-    blockHash: string
+export interface Bloco {
+  cabecalho: {
+    nonce: number // número aleatório que identifica um bloco sendo usado em combinação 
+    // com hash para evitar que as informações dos blocos sejam manipuladas.
+    hashDoBloco: string
   }
-  payload: {
-    sequence: number
-    timestamp: number
-    data: any
-    previousHash: string
+  cargaUtil: {
+    sequencia: number
+    carimboDeDataHora: number
+    dados: any
+    hashAnterior: string
   }
 }
 
-export class BlockChain {
-  #chain: Block[] = []
-  private powPrefix = '0'
+export class CadeiaDeBlocos {
+  #cadeia: Bloco[] = []
+  private prefixoDeProvaDeTrabalho = '0'
 
-  constructor (private readonly difficulty: number = 4) {
-    this.#chain.push(this.createGenesisBlock())
+  constructor (private readonly dificuldade: number = 4) {
+    this.#cadeia.push(this.criarBlocoGenesis())
   }
 
-  private createGenesisBlock () { 
-    const payload = {
-      sequence: 0,
-      timestamp: +new Date(),
-      data: 'Bloco genesis',
-      previousHash: ''
+  private criarBlocoGenesis () { 
+    const cargaUtil = {
+      sequencia: 0,
+      carimboDeDataHora: +new Date(),
+      dados: 'Bloco genesis',
+      hashAnterior: ''
     }
     return {
-      header: {
+      cabecalho: {
         nonce: 0,
-        blockHash: hash(JSON.stringify(payload))
+        hashDoBloco: hash(JSON.stringify(cargaUtil))
       },
-      payload
+      cargaUtil
     }
   }
 
-  private get lastBlock (): Block {
-    return this.#chain.at(-1) as Block
+  private get ultimoBloco (): Bloco {
+    return this.#cadeia.at(-1) as Bloco
   }
 
-  get chain () {
-    return this.#chain
+  get cadeia () {
+    return this.#cadeia
   }
 
-  private getPreviousBlockHash () {
-    return this.lastBlock.header.blockHash
+  private obterHashDoBlocoAnterior () {
+    return this.ultimoBloco.cabecalho.hashDoBloco
   }
 
-  createBlock (data: any) {
-    const newBlock = {
-      sequence: this.lastBlock.payload.sequence + 1,
-      timestamp: +new Date(),
-      data,
-      previousHash: this.getPreviousBlockHash()
+  criarBloco (dados: any) {
+    const novoBloco = {
+      sequencia: this.ultimoBloco.cargaUtil.sequencia + 1,
+      carimboDeDataHora: +new Date(),
+      dados,
+      hashAnterior: this.obterHashDoBlocoAnterior()
     }
 
-    console.log(`Bloco criado ${newBlock.sequence}: ${JSON.stringify(newBlock, null, 2)}`)
-    return newBlock
+    console.log(`Bloco criado ${novoBloco.sequencia}: ${JSON.stringify(novoBloco, null, 2)}`)
+    return novoBloco
   }
 
-  mineBlock (block: Block['payload']) {
+  minerarBloco (bloco: Bloco['cargaUtil']) {
     let nonce = 0
-    let startTime = +new Date()
+    let inicioTempo = +new Date()
 
     while (true) {
-      const blockHash = hash(JSON.stringify(block))
-      const proofingHash = hash(blockHash + nonce)
+      const hashDoBloco = hash(JSON.stringify(bloco))
+      const hashDeProva = hash(hashDoBloco + nonce)
 
       if (isHashProofed({
-        hash: proofingHash,
-        difficulty: this.difficulty,
-        prefix: this.powPrefix
+        hash: hashDeProva,
+        dificuldade: this.dificuldade,
+        prefixo: this.prefixoDeProvaDeTrabalho
       })) {
-        const endTime = +new Date()
-        const shortHash = blockHash.slice(0, 12)
-        const mineTime = (endTime - startTime) / 1000
+        const fimTempo = +new Date()
+        const hashCurto = hashDoBloco.slice(0, 12)
+        const tempoDeMineracao = (fimTempo - inicioTempo) / 1000
 
-        console.log(`Bloco Minerado ${block.sequence} em ${mineTime} segundos. Hash: ${shortHash} (${nonce} Tentativas)`)
+        console.log(`Bloco Minerado ${bloco.sequencia} em ${tempoDeMineracao} segundos. Hash: ${hashCurto} (${nonce} Tentativas)`)
 
         return {
-          minedBlock: { payload: { ...block }, header: { nonce, blockHash } },
-          minedHash: proofingHash,
-          shortHash,
-          mineTime
+          blocoMinerado: { cargaUtil: { ...bloco }, cabecalho: { nonce, hashDoBloco } },
+          hashMinerado: hashDeProva,
+          hashCurto,
+          tempoDeMineracao
         }
       }
       nonce++
     }
   }
 
-  verifyBlock (block: Block) {
-    if (block.payload.previousHash !== this.getPreviousBlockHash()) {
-      console.error(`Bloco inválido #${block.payload.sequence}:O Hash do Bloco Anterior é "${this.getPreviousBlockHash().slice(0, 12)}" não "${block.payload.previousHash.slice(0, 12)}"`)
+  verificarBloco (bloco: Bloco) {
+    if (bloco.cargaUtil.hashAnterior !== this.obterHashDoBlocoAnterior()) {
+      console.error(`Bloco inválido #${bloco.cargaUtil.sequencia}: O Hash do Bloco Anterior é "${this.obterHashDoBlocoAnterior().slice(0, 12)}" não "${bloco.cargaUtil.hashAnterior.slice(0, 12)}"`)
       return
     }
 
     if (!isHashProofed({
-      hash: hash(hash(JSON.stringify(block.payload)) + block.header.nonce),
-      difficulty: this.difficulty,
-      prefix: this.powPrefix
+      hash: hash(hash(JSON.stringify(bloco.cargaUtil)) + bloco.cabecalho.nonce),
+      dificuldade: this.dificuldade,
+      prefixo: this.prefixoDeProvaDeTrabalho
     })) {
-      console.error(`Bloco inválido #${block.payload.sequence}: Hash não é a prova, nonce ${block.header.nonce} não é válido`)
+      console.error(`Bloco inválido #${bloco.cargaUtil.sequencia}: Hash não é a prova, nonce ${bloco.cabecalho.nonce} não é válido`)
       return
     }
 
     return true
   }
 
-  pushBlock (block: Block) {
-    if (this.verifyBlock(block)) this.#chain.push(block)
-    console.log(`Bloco empurrado #${JSON.stringify(block, null, 2)}`)
-    return this.#chain
+  empurrarBloco (bloco: Bloco) {
+    if (this.verificarBloco(bloco)) this.#cadeia.push(bloco)
+    console.log(`Bloco empurrado #${JSON.stringify(bloco, null, 2)}`)
+    return this.#cadeia
   }
 }
